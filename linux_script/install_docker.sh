@@ -51,7 +51,9 @@ EOF
 
 install_docker_compose(){
     curl -SL https://github.com/docker/compose/releases/download/v2.24.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+    check_commond "安装docker-compose失败"
     chmod +x /usr/local/bin/docker-compose
+
 }
 install_docker
 check_commond "安装docker"
