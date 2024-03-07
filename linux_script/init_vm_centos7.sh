@@ -3,59 +3,13 @@
 # centos7 初始化
 
 [[ `id -u` != 0 ]] && echo "请使用root用户执行此脚本" && exit 1
+cat /etc/redhat-release | grep -i "centos.*7." &>/dev/null
+[[ $? != 0 ]] && echo "仅支持centos7" && exit 1
 
 # 1.更换镜像源
 replace_repo(){
-	cp -a /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.bak
-	
-cat > /etc/yum.repos.d/CentOS-Base.repo << "EOF"
-# CentOS-Base.repo
-#
-# The mirror system uses the connecting IP address of the client and the
-# update status of each mirror to pick mirrors that are updated to and
-# geographically close to the client.  You should use this for CentOS updates
-# unless you are manually picking other mirrors.
-#
-# If the mirrorlist= does not work for you, as a fall back you can try the 
-# remarked out baseurl= line instead.
-#
-#
- 
-[base]
-name=CentOS-$releasever - Base - repo.huaweicloud.com
-baseurl=https://repo.huaweicloud.com/centos/$releasever/os/$basearch/
-#mirrorlist=https://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os
-gpgcheck=1
-gpgkey=https://repo.huaweicloud.com/centos/RPM-GPG-KEY-CentOS-7
- 
-#released updates 
-[updates]
-name=CentOS-$releasever - Updates - repo.huaweicloud.com
-baseurl=https://repo.huaweicloud.com/centos/$releasever/updates/$basearch/
-#mirrorlist=https://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates
-gpgcheck=1
-gpgkey=https://repo.huaweicloud.com/centos/RPM-GPG-KEY-CentOS-7
- 
-#additional packages that may be useful
-[extras]
-name=CentOS-$releasever - Extras - repo.huaweicloud.com
-baseurl=https://repo.huaweicloud.com/centos/$releasever/extras/$basearch/
-#mirrorlist=https://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras
-gpgcheck=1
-gpgkey=https://repo.huaweicloud.com/centos/RPM-GPG-KEY-CentOS-7
- 
-#additional packages that extend functionality of existing packages
-[centosplus]
-name=CentOS-$releasever - Plus - repo.huaweicloud.com
-baseurl=https://repo.huaweicloud.com/centos/$releasever/centosplus/$basearch/
-#mirrorlist=https://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus
-gpgcheck=1
-enabled=0
-gpgkey=https://repo.huaweicloud.com/centos/RPM-GPG-KEY-CentOS-7
-EOF
-
+	wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.huaweicloud.com/repository/conf/CentOS-7-anon.repo
 	yum clean all && yum makecache
-	yum -y install epel-release
 	echo "更换镜像源完成"
 
 }
@@ -66,7 +20,7 @@ install_init_software(){
     yum -y  install openssl openssl-devel systemd-devel zlib-devel vim lrzsz tree tmux 
     yum -y install lsof tcpdump wget net-tools bc bzip2 zip unzip nfs-utils man-pages 
     yum -y install expect mlocate openssh-server pstree iftop iotop dstat 
-    yum -y install traceroute rsync iptables-services fuse-sshfs 
+    yum -y install traceroute rsync iptables-services fuse-sshfs telnet psmisc
     [[ $? == 0 ]] || echo "初始化软件安装失败,请检查网络" || exit 1
 
     echo "初始化软件安装完成"
@@ -84,7 +38,7 @@ cat > ~/.vimrc << "EOF"
 set ignorecase
 set cursorline
 set autoindent
-set nu
+set nonu
 set et
 set ts=4
 set paste
@@ -128,6 +82,7 @@ alias mv='mv -i'
 alias cls='clear'
 alias vi='vim'
 alias hc='history -c'
+alias tcpdump='tcpdump -qn'
 alias ll='ls -l'
 alias syc='systemctl'
 alias iptl='iptables --list -n --line-number'
@@ -138,6 +93,27 @@ alias cdnginx='cd /apps/nginx/conf'
 alias pip='pip3'
 alias python='python3'
 #----------------------
+
+# user_customer_func
+#----------------------
+into(){
+    docker exec -it --privileged  `docker ps | grep "$*" | awk -F ' ' '{print $1}'` bash
+}
+
+git_proxy(){
+    git config --global http.proxy "http://127.0.0.1:1087"
+    git config --global https.proxy "http://127.0.0.1:1087"
+}
+
+git_unproxy(){
+    git config --global --unset http.proxy
+    git config --global --unset https.proxy
+}
+
+alias proxy='export all_proxy=http://127.0.0.1:1087'
+alias unproxy='unset all_proxy'
+
+
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
