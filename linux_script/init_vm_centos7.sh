@@ -20,7 +20,7 @@ install_init_software(){
     yum -y  install openssl openssl-devel systemd-devel zlib-devel vim lrzsz tree tmux 
     yum -y install lsof tcpdump wget net-tools bc bzip2 zip unzip nfs-utils man-pages 
     yum -y install expect mlocate openssh-server pstree iftop iotop dstat 
-    yum -y install traceroute rsync iptables-services fuse-sshfs telnet psmisc
+    yum -y install traceroute rsync iptables-services fuse-sshfs telnet psmisc bind-utils nmap speed-cli
     [[ $? == 0 ]] || echo "初始化软件安装失败,请检查网络" || exit 1
 
     echo "初始化软件安装完成"
@@ -68,15 +68,7 @@ EOF
 # 4.命令别名配置
 init_bashrc(){
 
-cat > ~/.bashrc << EOF
-# .bashrc
-
-# User specific aliases and functions
-
-alias rm='rm -i'
-alias cp='cp -i'
-alias mv='mv -i'
-
+cat >> /etc/profile.d/my_alias.sh << "EOF"
 # user_custom_alias
 #----------------------
 alias cls='clear'
@@ -112,13 +104,6 @@ git_unproxy(){
 
 alias proxy='export all_proxy=http://127.0.0.1:1087'
 alias unproxy='unset all_proxy'
-
-
-
-# Source global definitions
-if [ -f /etc/bashrc ]; then
-	. /etc/bashrc
-fi
 #----------------------
 EOF
 
