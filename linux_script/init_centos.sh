@@ -8,9 +8,12 @@ cat /etc/redhat-release | grep -i "centos.*7." &>/dev/null
 
 # 1.更换镜像源
 replace_repo(){
-	wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.huaweicloud.com/repository/conf/CentOS-7-anon.repo
+	cat /etc/os-release | egrep -i "centos.*7" &>/dev/null && wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.huaweicloud.com/repository/conf/CentOS-7-anon.repo
+	
+	cat /etc/os-release | egrep -i "centos.*8" &>/dev/null	&& wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.huaweicloud.com/repository/conf/CentOS-8-anon.repo
 	yum clean all && yum makecache
 	echo "更换镜像源完成"
+	yum -y install epel-release
 
 }
 
@@ -20,7 +23,8 @@ install_init_software(){
     yum -y  install openssl openssl-devel systemd-devel zlib-devel vim lrzsz tree tmux 
     yum -y install lsof tcpdump wget net-tools bc bzip2 zip unzip nfs-utils man-pages 
     yum -y install expect mlocate openssh-server pstree iftop iotop dstat 
-    yum -y install traceroute rsync iptables-services fuse-sshfs telnet psmisc bind-utils nmap speed-cli
+    yum -y install traceroute rsync iptables-services fuse-sshfs telnet psmisc 
+	yum -y install bind-utils nmap speed-cli
     [[ $? == 0 ]] || echo "初始化软件安装失败,请检查网络" || exit 1
 
     echo "初始化软件安装完成"
@@ -81,6 +85,8 @@ alias iptl='iptables --list -n --line-number'
 alias cdnet='cd /etc/sysconfig/network-scripts'
 alias cdservice='cd /usr/lib/systemd/system/'
 alias cdnginx='cd /apps/nginx/conf'
+alias repols='yum repolist all'
+alias sdisk='echo - - - > /sys/class/scsi_host/host0/scan ; echo - - - > /sys/class/scsi_host/host1/scan ;echo - - - > /sys/class/scsi_host/host2/scan'
 
 alias pip='pip3'
 alias python='python3'
